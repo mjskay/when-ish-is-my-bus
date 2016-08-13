@@ -40,24 +40,20 @@ import::from(gamlss.dist, BE)
 
 We also use the following libraries available from Github, which can be installed using `devtools::install_github`:
 
-```{r libraries2, message=FALSE, warning=FALSE, cache=FALSE}
+```{r setup_libraries, message=FALSE, warning=FALSE, cache=FALSE}
 library(tidybayes)      # compose_data, apply_prototypes, extract_samples, compare_levels
                         # to install, run devtools::install_github("mjskay/tidybayes")
 library(metabayes)      # metastan
                         # to install, run devtools::install_github("mjskay/metabayes")
 ```
 
-### ggplot theme
+### Ggplot theme
 
-Set up a decent ggplot theme for use in papers:
-
-```{r setup2, include=FALSE, cache=FALSE}
-#set up ggplot theme
-theme_set(theme_bw() + theme(
+```{r setup_ggplot_theme}
+theme_set(theme_light() + theme(
     panel.grid.major=element_blank(), 
     panel.grid.minor=element_blank(),
     axis.line=element_line(color="black"),
-    panel.border=element_blank(),
     text=element_text(size=14),
     axis.text=element_text(size=rel(15/16)),
     axis.ticks.length=unit(8, "points"),
@@ -69,7 +65,7 @@ theme_set(theme_bw() + theme(
 
 Finally, some of the manipulation of Bayesian model posteriors can take a bunch of memory:
 
-```{r memory_limit, warning=FALSE, results="hide"}
+```{r setup_memory_limit, warning=FALSE, results="hide"}
 memory.limit(10000)
 ```
 

@@ -4,7 +4,7 @@ Survey analysis for When (ish) is My Bus? User-centered Visualizations of Uncert
 -   [Introduction](#introduction)
 -   [Setup](#setup)
     -   [Required libraries](#required-libraries)
-    -   [ggplot theme](#ggplot-theme)
+    -   [Ggplot theme](#ggplot-theme)
     -   [Memory limit](#memory-limit)
 -   [Load and clean data](#load-and-clean-data)
 -   [Method](#method)
@@ -53,9 +53,19 @@ library(metabayes)      # metastan
                         # to install, run devtools::install_github("mjskay/metabayes")
 ```
 
-### ggplot theme
+### Ggplot theme
 
-Set up a decent ggplot theme for use in papers:
+``` r
+theme_set(theme_light() + theme(
+    panel.grid.major=element_blank(), 
+    panel.grid.minor=element_blank(),
+    axis.line=element_line(color="black"),
+    text=element_text(size=14),
+    axis.text=element_text(size=rel(15/16)),
+    axis.ticks.length=unit(8, "points"),
+    line=element_line(size=.75)
+))
+```
 
 ### Memory limit
 
@@ -419,7 +429,7 @@ dfl %>%
     ## 
     ##      viz       lower         cor        upper
     ##   <fctr>       <dbl>       <dbl>        <dbl>
-    ## 1    b20 -0.24371108 -0.18477711 -0.125379909
-    ## 2   b100 -0.12231490 -0.06092217  0.001937345
-    ## 3   fill -0.07644443 -0.01284203  0.050975327
-    ## 4  draws -0.02077061  0.04049622  0.101486577
+    ## 1    b20 -0.24449719 -0.18477711 -0.124514218
+    ## 2   b100 -0.12195386 -0.06092217  0.001167325
+    ## 3   fill -0.07604545 -0.01284203  0.050878110
+    ## 4  draws -0.02235303  0.04049622  0.101560794
