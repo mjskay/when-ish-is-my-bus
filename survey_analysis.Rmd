@@ -1,0 +1,346 @@
+---
+title: "Survey analysis for When (ish) is My Bus? User-centered Visualizations of Uncertainty in Everyday, Mobile Predictive Systems"
+output: 
+    github_document:
+        toc: true
+---
+
+## Introduction
+
+This document describes the analyses from our paper using R code and associated output. It is generated from [survey_analysis.Rmd](survey_analysis.Rmd).
+
+## Setup
+
+### Required libraries
+
+If you are missing any of the packages below, use `install.packages("packagename")` to install them.
+The `import::` syntax requires the `import` package to be installed, and provides a simple way to 
+import specific functions from a package without polluting your entire namespace (unlike `library()`)
+
+```{r setup, results="hide", message=FALSE}
+library(Hmisc)
+library(ggplot2)
+import::from(scales, extended_breaks, format_format, math_format)
+import::from(boot, logit, inv.logit)
+import::from(grid, grid.draw)
+import::from(RVAideMemoire, spearman.ci)
+import::from(magrittr, `%>%`, `%<>%`, `%$%`)
+import::from(dplyr, 
+    transmute, group_by, mutate, filter, select, 
+    left_join, summarise, one_of, arrange, do, ungroup)
+import::from(gamlss, gamlss)
+import::from(gamlss.dist, BE)
+```
+
+We also use the following libraries available from Github, which can be installed using `devtools::install_github`:
+
+```{r libraries2, message=FALSE, warning=FALSE, cache=FALSE}
+library(tidybayes)      # compose_data, apply_prototypes, extract_samples, compare_levels
+                        # to install, run devtools::install_github("mjskay/tidybayes")
+library(metabayes)      # metastan
+                        # to install, run devtools::install_github("mjskay/metabayes")
+```
+
+Set up a decent ggplot theme for use in papers:
+
+```{r setup2, include=FALSE, cache=FALSE}
+#set up ggplot theme
+theme_set(theme_bw() + theme(
+    panel.grid.major=element_blank(), 
+    panel.grid.minor=element_blank(),
+    axis.line=element_line(color="black"),
+    panel.border=element_blank(),
+    text=element_text(size=14),
+    axis.text=element_text(size=rel(15/16)),
+    axis.ticks.length=unit(8, "points"),
+    line=element_line(size=.75)
+))
+```
+
+Finally, some of the manipulation of Bayesian model posteriors can take a bunch of memory:
+
+```{r memory_limit, warning=FALSE, results="hide"}
+memory.limit(10000)
+```
+
+## Load and clean data
+
+Data loading and cleaning is implemented in [R/load-survey-data.R](R/load-survey-data.R), which loads and defines a few data frames, notably `df` (raw data) and `dfl` (`df` transformed and cleaned up into long format).
+
+```{r clean, results="hide"}
+source("R/load-survey-data.R")
+```
+
+Since most of our analysis will be done with `dfl`, let's see its structure:
+
+```{r}
+str(dfl)
+```
+
+In most cases we'll be particularly interested in just a few columns, so let's see those:
+
+```{r}
+dfl %>%
+    select(participant, viz, known_p, p, restricted_p) %>%
+    head(10)
+```
+
+`participant` is a factor corresponding to the participant, `viz` is a factor corresponding to the visualization (`b20` is dotplot-20, `b100` is dotplot-100, `draws` is the stripeplot, and `fill` is the density plot), `known_p` is the true probability being estimated, `p` is the participant's estimate, and `restricted_p` is the same as `p` except `0` is mapped to `0.001` and `1` is mapped to `0.999`, because the regression model we will use requires outcomes between 0 and 1 (exclusive).
+
+## Method
+
+To assess the bias and variance in responses more systematically, we 
+fit a beta regression to participants' estimated probabilities. Beta regression
+assumes responses are distributed according to a beta distribution, which is defined on (0, 1) and naturally 
+accounts for the fact that responses on a bounded interval have non-constant variance 
+(also known as _hetereoskedasticity_): as we approach the boundaries, responses tend to "bunch up". 
+
+We use a regression with a submodel for the mean (in logit-space) and
+the dispersion (in log-space). This allows us to model the _bias_ of people's 
+estimates as effects on the mean of their responses, and the _variance_ of their
+estimates as effects on the dispersion of their responses. Specifically, we
+include _visualization_, _logit(correct probability)_, and their interaction as
+fixed effects on mean response (we use logit(correct probability) instead of 
+the untransformed correct probability because the response is also estimated in logit space, thus
+an unbiased observer would have an intercept of 0 and slope of 1 for logit(correct probability)). We include 
+_visualization_ and _layout_ as fixed effects on the dispersion (in other words,
+some visualizations or layouts may be harder to use, resulting in more variable responses). 
+We also include _participant_ and _participant × visualization_ as random effects
+(some people may be worse at this task, or worse at this task on specific visualizations),
+and _question_ as a random effect (some questions may be harder).
+
+We use a Bayesian model, which allows us to build on previous results by specifying prior information
+for effects. We derive prior effects from fitting a similar model to the data from Hullman et al.,
+which had a similar task (estimating cumulative probabilities on three visualizations: a violin
+plot, animated hypothetical outcomes, and error bars). We set Gaussian priors for fixed effects 
+in our model that capture the sizes of effects seen in the HOPs data within 1-2 standard deviations, 
+with skeptical means (0 for intercept and 1 for slope in logit-logit space, corresponding to 
+an unbiased observer). We use the posterior estimate of the variance of the random effect of 
+participant in that model as the prior for the variance of random effects in our analysis. 
+(Footnote: note that similar results were obtained using more default priors, showing our results are not 
+highly sensitive to choice of priors here).
+
+## Results
+
+### Variance in respondents' probability estimates
+As a first glance at understanding performance across conditions, we can look at
+differences between the correct probability and the probability respondents gave
+for each questions (in logit-logit space). Here is the density of those 
+differences, broken down by _visualization type_: 
+
+```{r variance, fig.width=6, fig.height=6}
+dfl %>%
+    ggplot(aes(x = logit(restricted_p) - logit(known_p))) + 
+    geom_vline(xintercept=0, linetype="dashed", color="#d62d0e", size=.75) +
+    stat_density() +
+    scale_x_continuous(breaks=extended_breaks(11), 
+        labels = function(x) paste(format_format()(x), "\n", format_format()(round(inv.logit(x),2)))) +
+    coord_cartesian(xlim=c(-2.5,2.5)) + 
+    facet_grid(viz~.)
+```
+
+We can see that bias (the difference between the provided answer and the correct
+answer on average) is fairly low. Visually, we can also see that variance in the estimates
+appears lower in the _dotplot-20_ visualization compared to the other visualizations.
+
+### Beta regression model
+
+Because the Bayesian model can take a little while to fit, the code for specifying and fitting the model can be found in [R/beta-regression-for-p~known_p.R](R/beta-regression-for-p~known_p.R), which saves its output to the `fit` object stored in [fits/fit-p~known_p.RData](fits/fit-p~known_p.RData).
+
+```{r load_p_p_known_fit}
+load("fits/fit-p~known_p.RData")
+```
+
+Since Stan doesn't know anything about factors, we use `apply_prototypes` to recover information like what indices correspond to which factors (e.g., vizualization types) in the model. This allows the `tidy_samples` function to correctly label coefficients when it extracts them from the model.
+
+```{r}
+fit %<>% apply_prototypes(dfl)
+```
+
+Using the beta regression model described above, we can estimate the dispersion associated
+with each visualization. First, we extract the dispersion coefficients from the model:
+
+```{r get_dispersion_coefs}
+dispersion = tidy_samples(fit, d_viz[viz])
+```
+
+Then we'll set up some function for plotting:
+
+```{r log_plot_functions}
+#assuming data in natural log space, these give log2 breaks and log2 labels
+log2_breaks = function(x) extended_breaks()(x/log(2)) * log(2)
+log2_format = function(x) math_format(2^.x)(x/log(2))
+
+#assuming dispersion coefficients in log space, this gives approximate standard deviation
+#of a beta distribution with mean .5 having that dispersion
+logdisp_to_sd.5 = function(x) sqrt(.25/(exp(-x) + 1))
+logdisp_to_sd.5_format = function(x) format_format()(round(sqrt(.25/(exp(-x) + 1)), 2))
+
+no_clip = function(p) {
+    #draw plot with no clipping
+    gt = ggplot_gtable(ggplot_build(p))
+    gt$layout$clip[gt$layout$name=="panel"] = "off"
+    grid.draw(gt)
+}
+
+logticks = function(x, base=2) {
+    #hackish logticks since ggplot's are broken with coord_flip
+    min_ = min(ceiling(x/log(base)))
+    max_ = max(floor(x/log(base))) - 1
+    data.frame(tick = unlist(lapply(min_:max_, function(x) {
+        log10(1:10*10^x)*log(base)
+    })))
+}
+```
+
+And we'll plot the dispersion coefficients:
+
+```{r dispersion_coefs, fig.width=6, fig.height=4}
+
+#as dispersion
+p = dispersion %>%
+    mutate(viz = reorder(viz, -d_viz)) %>%   #nicer order for this plot
+    ggeye(aes(x = viz, y = d_viz)) + 
+    geom_segment(aes(y=tick, yend=tick), data=logticks(dispersion$d_viz), 
+        x=.3, xend=.4, color="darkgray"
+    ) +
+    scale_y_continuous(
+        breaks = log2_breaks,
+        labels = function(x) paste(log2_format(x), "\n", logdisp_to_sd.5_format(x))
+    ) 
+no_clip(p)
+```
+
+_Dotplot-20_ has the lowest estimated dispersion. However, these are a little difficult to interpret. So instead, we'll convert the dispersion into the predicted standard deviation of the response assuming the mean predicted response (`p`) is == .5:
+
+```{r dispersion_sd, fig.width=6, fig.height=4}
+#as sd at p = .5
+dispersion %>%
+    mutate(
+        viz = reorder(viz, -d_viz), #nicer order for this plot
+        sd_viz = logdisp_to_sd.5(d_viz)
+    ) %>%
+    ggeye(aes(x = viz, y = sd_viz)) + 
+    stat_summary(aes(label=..y..), fun.y = function(x) 
+        round(quantile(x, .025), 3), geom="text", vjust=-0.3, hjust=1, size=4
+    ) +
+    stat_summary(aes(label=..y..), fun.y = function(x) 
+        round(median(x), 3), geom="text", vjust=-0.6, hjust=0.5, size=4
+    ) + 
+    stat_summary(aes(label=..y..), fun.y = function(x) 
+        round(quantile(x, .975), 3), geom="text", vjust=-0.3, hjust=0, size=4
+    )
+```
+
+_dotplot-20_ is around
+2-3 percentage points better than _density_, and about 5-6 percentage points better than
+_stripeplot_. We can estimate these differences on the dispersion scale:
+
+```{r dispersion_coef_comp, fig.width=6, fig.height=5}
+p = dispersion %>%
+    mutate(viz = relevel(viz, "b20")) %>%   #nicer order for this plot
+    compare_levels(d_viz, by=viz) %>%
+    ggeye(aes(x = viz, y = d_viz)) +
+    geom_hline(linetype="dashed", yintercept=0) +
+    scale_y_continuous(breaks=log2_breaks, labels=log2_format) +
+    geom_segment(aes(y=tick, yend=tick), data=logticks(c(-1,2)), x=.25, xend=.4, color="darkgray")
+no_clip(p)
+```
+
+As differences in points of sd at p = .5 (0.01 is one percentage point):
+
+```{r dispersion_sd_diff, fig.width=6, fig.height=5}
+dispersion %>%
+    mutate(
+        sd_viz = logdisp_to_sd.5(d_viz),
+        viz = relevel(viz, "b20") #nicer order for this plot
+    ) %>%
+    compare_levels(sd_viz, by=viz) %>%
+    ggeye(aes(x = viz, y = sd_viz)) +
+    stat_summary(aes(label=..y..), fun.y = function(x) 
+        round(quantile(x, .025), 3), geom="text", vjust=0, hjust=1
+    ) +
+    stat_summary(aes(label=..y..), fun.y = function(x) 
+        round(median(x), 3), geom="text", vjust=-0.3, hjust=0.5, size=4
+    ) +
+    stat_summary(aes(label=..y..), fun.y = function(x) 
+        round(quantile(x, .975), 3), geom="text", vjust=0, hjust=0
+    ) +
+    geom_hline(linetype="dashed", yintercept=0)
+```
+
+Or as ratios of standard deviations at p = .5:
+
+```{r dispersion_sd_ratio, fig.width=6, fig.height=5}
+dispersion %>%
+    mutate(
+        sd_viz = logdisp_to_sd.5(d_viz),
+        viz = relevel(viz, "b20") #nicer order for this plot
+    ) %>%
+    compare_levels(sd_viz, by=viz, fun=`/`) %>%
+    ggeye(aes(x = viz, y = sd_viz)) +
+    stat_summary(aes(label=..y..), fun.y = function(x) 
+        round(quantile(x, .025), 2), geom="text", vjust=0, hjust=1
+    ) +
+    stat_summary(aes(label=..y..), fun.y = function(x) 
+        round(median(x), 2), geom="text", vjust=-0.3, hjust=0.5, size=4
+    ) +
+    stat_summary(aes(label=..y..), fun.y = function(x) 
+        round(quantile(x, .975), 2), geom="text", vjust=0, hjust=0
+    ) +
+    geom_hline(linetype="dashed", yintercept=1)
+```
+
+_Dotplot-100_ performs similarly to _density_ in terms of
+dispersion, which would be consistent with people mostly employing estimation of area in _dotplot-100_ (when
+there are more dots than someone is willing to count).
+
+
+```{r gender_disp, fig.width=6, fig.height=1.5}
+d_gender = tidy_samples(fit, d_gender[])
+
+p = d_gender %>%
+    ggeye(aes(x = "male - female", y = d_gender)) +
+    geom_hline(linetype="dashed", yintercept=0) +
+    geom_segment(aes(y=tick, yend=tick), data=logticks(c(-1,1)), x=.35, xend=.5, color="darkgray") +
+    scale_y_continuous(breaks=log2_breaks, labels=log2_format, limits=c(-1,1))
+no_clip(p)
+```
+
+Gender differences are likely not due to differences in statistical experience, as the distribution of statistical experience in each gender is very similar:
+
+```{r}
+gender_stats = xtabs(~ statistics_experience + gender, data=df)
+gender_stats %>% cbind(round(prop.table(., 2), 2))
+chisq.test(gender_stats)
+```
+
+Route-layout may also have been a little harder for people to use (slightly less precise), but not by much (if at all):
+
+```{r layout_disp, fig.width=6, fig.height=1.5}
+d_layout = tidy_samples(fit, d_layout[])
+
+p = d_layout %>%
+    ggeye(aes(x = "route - bus", y = d_layout)) +
+    geom_hline(linetype="dashed", yintercept=0) +
+    geom_segment(aes(y=tick, yend=tick), data=logticks(c(-1,1)), x=.35, xend=.5, color="darkgray") +
+    scale_y_continuous(breaks=log2_breaks, labels=log2_format, limits=c(-1,1))
+no_clip(p)
+```
+
+### Confidence
+ 
+Correlation between confidence and error:
+
+```{r conf_corr}
+dfl %>%
+    group_by(viz) %>%
+    do({
+        ct = with(., 
+            spearman.ci(abs(logit(restricted_p) - logit(known_p)), 
+                restricted_confidence, nrep=10000
+            )
+        )
+        data.frame(lower=ct$conf.int[[1]], cor=ct$estimate, upper=ct$conf.int[[2]])
+    })
+```
