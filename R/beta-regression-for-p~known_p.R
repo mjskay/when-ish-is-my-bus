@@ -1,7 +1,14 @@
 #######
 # Fit beta regression for p ~ known_p.
 # See ../survey_analysis.md for an analysis of the results of this model.
+#
+# The model stored in the repo was not run with the same number of iterations as in
+# the paper since that model takes up about 800MB, so we use a smaller number of
+# iterations here (the only real difference is slightly choppier looking posteriors,
+# the main conclusoins are the same). Set final_model = TRUE to run the model with 
+# the same parameters as the model reported in the paper.
 #######
+final_model = FALSE
 
 source("R/load-survey-data.R")
 
@@ -10,10 +17,8 @@ library(metabayes)
 library(rstan)
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
-memory.limit(8000)
 
 #MODEL SPEC
-final_model = TRUE
 m.metastan = metastan(
     data = {
         n : int(lower=1)
@@ -143,9 +148,9 @@ if (final_model) {
     thin = 8
     chains = 16
 } else {
-    iterations = 1000
-    thin = 2
-    chains = 2
+    iterations = 10000
+    thin = 20
+    chains = 4
 }
 
 #RUN THE SAMPLER

@@ -4,6 +4,8 @@ Survey analysis for When (ish) is My Bus? User-centered Visualizations of Uncert
 -   [Introduction](#introduction)
 -   [Setup](#setup)
     -   [Required libraries](#required-libraries)
+    -   [ggplot theme](#ggplot-theme)
+    -   [Memory limit](#memory-limit)
 -   [Load and clean data](#load-and-clean-data)
 -   [Method](#method)
 -   [Results](#results)
@@ -15,6 +17,10 @@ Introduction
 ------------
 
 This document describes the analyses from our paper using R code and associated output. It is generated from [survey\_analysis.Rmd](survey_analysis.Rmd).
+
+Please cite:
+
+Matthew Kay, Tara Kola, Jessica Hullman, Sean Munson. *When (ish) is My Bus? User-centered Visualizations of Uncertainty in Everyday, Mobile Predictive Systems*. CHI 2016. DOI: [10.1145/2858036.2858558](http://dx.doi.org/10.1145/2858036.2858558).
 
 Setup
 -----
@@ -47,7 +53,11 @@ library(metabayes)      # metastan
                         # to install, run devtools::install_github("mjskay/metabayes")
 ```
 
+### ggplot theme
+
 Set up a decent ggplot theme for use in papers:
+
+### Memory limit
 
 Finally, some of the manipulation of Bayesian model posteriors can take a bunch of memory:
 
@@ -409,7 +419,7 @@ dfl %>%
     ## 
     ##      viz       lower         cor        upper
     ##   <fctr>       <dbl>       <dbl>        <dbl>
-    ## 1    b20 -0.24351182 -0.18477711 -0.123197397
-    ## 2   b100 -0.12334057 -0.06092217  0.001134106
-    ## 3   fill -0.07691484 -0.01284203  0.049856357
-    ## 4  draws -0.02120014  0.04049622  0.101468006
+    ## 1    b20 -0.24371108 -0.18477711 -0.125379909
+    ## 2   b100 -0.12231490 -0.06092217  0.001937345
+    ## 3   fill -0.07644443 -0.01284203  0.050975327
+    ## 4  draws -0.02077061  0.04049622  0.101486577

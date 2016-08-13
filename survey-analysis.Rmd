@@ -9,6 +9,12 @@ output:
 
 This document describes the analyses from our paper using R code and associated output. It is generated from [survey_analysis.Rmd](survey_analysis.Rmd).
 
+Please cite:
+
+Matthew Kay, Tara Kola, Jessica Hullman, Sean Munson. _When (ish) is My Bus? 
+User-centered Visualizations of Uncertainty in Everyday, Mobile Predictive Systems_. 
+CHI 2016. DOI: [10.1145/2858036.2858558](http://dx.doi.org/10.1145/2858036.2858558).
+
 ## Setup
 
 ### Required libraries
@@ -41,6 +47,8 @@ library(metabayes)      # metastan
                         # to install, run devtools::install_github("mjskay/metabayes")
 ```
 
+### ggplot theme
+
 Set up a decent ggplot theme for use in papers:
 
 ```{r setup2, include=FALSE, cache=FALSE}
@@ -56,6 +64,8 @@ theme_set(theme_bw() + theme(
     line=element_line(size=.75)
 ))
 ```
+
+### Memory limit
 
 Finally, some of the manipulation of Bayesian model posteriors can take a bunch of memory:
 
