@@ -1,0 +1,9 @@
+pquestion,known_p
+scenario_1_lt10,0.4270997
+scenario_1_lt15,0.8198874
+scenario_2_5to10,0.8828049
+scenario_2_40to45,0.1959154
+scenario_3_lt15,0.6792481
+scenario_3_25to30,0.5602266
+scenario_4_lt20,0.6937501
+scenario_4_gt25,0.08133955
