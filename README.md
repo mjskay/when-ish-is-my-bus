@@ -13,7 +13,7 @@ CHI 2016. DOI: [10.1145/2858036.2858558](http://dx.doi.org/10.1145/2858036.28585
 
 ## Repository contents
 
-* [survey_analysis.md](survey_analysis.md): A description of the analyses from our paper using R code and associated output.
-* [quantile_dotplots.md](quantile_dotplots.md): A description of how to generate quantile dotplots.
+* [survey-analysis.md](survey-analysis.md): A description of the analyses from our paper using R code and associated output.
+* [quantile-dotplots.md](quantile-dotplots.md): A description of how to generate quantile dotplots.
 * [data/survey.csv](data/survey.csv): The survey data.
 * [R/](R/): Additional R files for the analysis (referred to in context in the documents above).

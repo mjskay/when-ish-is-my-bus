@@ -161,7 +161,7 @@ dfl %>%
     facet_grid(viz~.)
 ```
 
-![](survey_analysis_files/figure-markdown_github/variance-1.png)
+![](survey-analysis_files/figure-markdown_github/variance-1.png)
 
 We can see that bias (the difference between the provided answer and the correct answer on average) is fairly low. Visually, we can also see that variance in the estimates appears lower in the *dotplot-20* visualization compared to the other visualizations.
 
@@ -231,7 +231,7 @@ p = dispersion %>%
 no_clip(p)
 ```
 
-![](survey_analysis_files/figure-markdown_github/dispersion_coefs-1.png)
+![](survey-analysis_files/figure-markdown_github/dispersion_coefs-1.png)
 
 *Dotplot-20* has the lowest estimated dispersion. However, these are a little difficult to interpret. So instead, we'll convert the dispersion into the predicted standard deviation of the response assuming the mean predicted response (`p`) is == .5:
 
@@ -254,7 +254,7 @@ dispersion %>%
     )
 ```
 
-![](survey_analysis_files/figure-markdown_github/dispersion_sd-1.png)
+![](survey-analysis_files/figure-markdown_github/dispersion_sd-1.png)
 
 *dotplot-20* is around 2-3 percentage points better than *density*, and about 5-6 percentage points better than *stripeplot*. We can estimate these differences on the dispersion scale:
 
@@ -269,7 +269,7 @@ p = dispersion %>%
 no_clip(p)
 ```
 
-![](survey_analysis_files/figure-markdown_github/dispersion_coef_comp-1.png)
+![](survey-analysis_files/figure-markdown_github/dispersion_coef_comp-1.png)
 
 As differences in points of sd at p = .5 (0.01 is one percentage point):
 
@@ -293,7 +293,7 @@ dispersion %>%
     geom_hline(linetype="dashed", yintercept=0)
 ```
 
-![](survey_analysis_files/figure-markdown_github/dispersion_sd_diff-1.png)
+![](survey-analysis_files/figure-markdown_github/dispersion_sd_diff-1.png)
 
 Or as ratios of standard deviations at p = .5:
 
@@ -317,7 +317,7 @@ dispersion %>%
     geom_hline(linetype="dashed", yintercept=1)
 ```
 
-![](survey_analysis_files/figure-markdown_github/dispersion_sd_ratio-1.png)
+![](survey-analysis_files/figure-markdown_github/dispersion_sd_ratio-1.png)
 
 *Dotplot-100* performs similarly to *density* in terms of dispersion, which would be consistent with people mostly employing estimation of area in *dotplot-100* (when there are more dots than someone is willing to count).
 
@@ -332,7 +332,7 @@ p = d_gender %>%
 no_clip(p)
 ```
 
-![](survey_analysis_files/figure-markdown_github/gender_disp-1.png)
+![](survey-analysis_files/figure-markdown_github/gender_disp-1.png)
 
 Gender differences are likely not due to differences in statistical experience, as the distribution of statistical experience in each gender is very similar:
 
@@ -385,7 +385,7 @@ p = d_layout %>%
 no_clip(p)
 ```
 
-![](survey_analysis_files/figure-markdown_github/layout_disp-1.png)
+![](survey-analysis_files/figure-markdown_github/layout_disp-1.png)
 
 ### Confidence
 
@@ -409,7 +409,7 @@ dfl %>%
     ## 
     ##      viz       lower         cor        upper
     ##   <fctr>       <dbl>       <dbl>        <dbl>
-    ## 1    b20 -0.24393033 -0.18477711 -0.124785234
-    ## 2   b100 -0.12240082 -0.06092217  0.001931979
-    ## 3   fill -0.07531644 -0.01284203  0.049570276
-    ## 4  draws -0.02152885  0.04049622  0.101545584
+    ## 1    b20 -0.24351182 -0.18477711 -0.123197397
+    ## 2   b100 -0.12334057 -0.06092217  0.001134106
+    ## 3   fill -0.07691484 -0.01284203  0.049856357
+    ## 4  draws -0.02120014  0.04049622  0.101468006
