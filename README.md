@@ -1,5 +1,8 @@
 # Data and code for _When (ish) is My Bus? User-centered Visualizations of Uncertainty in Everyday, Mobile Predictive Systems_
 
+[![DOI](https://img.shields.io/badge/DOI-10.1145%2F2858036.2858558-blue.svg)(http://dx.doi.org/10.1145/2858036.2858558)]
+[![DOI](https://img.shields.io/badge/DOI-10.6084%2Fm9.figshare.2061876-blue.svg)(https://dx.doi.org/10.6084/m9.figshare.2061876)]
+
 _Matthew&nbsp;Kay ([mjskay@uw.edu](mailto:mjskay@uw.edu))_<br>
 _Tara&nbsp;Kola ([tara.kola@tufts.edu](mailto:tara.kola@tufts.edu))_<br>
 _Jessica&nbsp;Hullman ([jhullman@uw.edu](mailto:jhullman@uw.edu))_<br>
