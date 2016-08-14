@@ -15,5 +15,7 @@ CHI 2016. DOI: [10.1145/2858036.2858558](http://dx.doi.org/10.1145/2858036.28585
 
 * [survey-analysis.md](survey-analysis.md): A description of the analyses from our paper using R code and associated output.
 * [quantile-dotplots.md](quantile-dotplots.md): A description of how to generate quantile dotplots.
+* [bus-model.md](bus-model.md): An example of the type of model used to generate probabilistic predictions of
+  bus arrival times for the survey
 * [data/survey.csv](data/survey.csv): The survey data.
 * [R/](R/): Additional R files for the analysis (referred to in context in the documents above).
