@@ -98,7 +98,7 @@ These give the actual time to arrival from when the reading was taken, the time 
 Model
 -----
 
-We want to predict the time to arrival based on the other four columns. Below is a Box-Cox t regression that does so:
+We want to predict the time to arrival based on the other four columns. Below is a Box-Cox t (BCT) regression that does so (strictly speaking, a *shifted* Box-Cox t; the various `+ 15`s and `- 15`s used throughout this document shift the BCT distribution to be defined on `(-15, Inf)` instead of its usual `(0, Inf)`):
 
 ``` r
 m = gamlss(
