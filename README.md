@@ -1,5 +1,6 @@
 # Data and code for _When (ish) is My Bus? User-centered Visualizations of Uncertainty in Everyday, Mobile Predictive Systems_
 
+[![License](https://img.shields.io/badge/license-Apache%202.0-lightgrey.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![DOI](https://img.shields.io/badge/DOI-10.1145%2F2858036.2858558-blue.svg)](http://dx.doi.org/10.1145/2858036.2858558)
 [![DOI](https://img.shields.io/badge/DOI-10.6084%2Fm9.figshare.2061876-blue.svg)](https://dx.doi.org/10.6084/m9.figshare.2061876)
 
